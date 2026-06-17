@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   Expand,
   FileImage,
+  FileText,
   Layers,
   Maximize2,
   Network,
@@ -13,11 +14,13 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 
 import { categoryLabels, diagrams, type DiagramItem } from '../data/diagrams'
+import { UseCaseScenarioPanel } from './UseCaseScenarioPanel'
 
 const categoryIcons = {
   behavioral: Workflow,
   structural: Layers,
   'data-flow': Network,
+  scenario: FileText,
 }
 
 function DiagramPreview({ diagram, onExpand }: { diagram: DiagramItem; onExpand: () => void }) {
@@ -144,8 +147,8 @@ export function DiagramGallery() {
           </p>
           <h2 className="mt-3 text-3xl font-bold text-white md:text-4xl">عرض المخططات المعمارية</h2>
           <p className="mt-4 text-lg text-slate-400">
-            سبعة مخططات رسمية توثّق سلوك النظام وهيكله وتدفق بياناته — متوافقة مع الكود
-            المُنفَّذ في مشروع نظام المواقف الذكي.
+            أحد عشر مخططاً وسيناريواً رسمياً بالترتيب الأكademي — BFD، DFD، Use Cases،
+            السيناريوهات، Activity Diagrams، ومخطط الأصناف.
           </p>
         </motion.div>
 
@@ -198,16 +201,21 @@ export function DiagramGallery() {
                   <button
                     type="button"
                     onClick={() => setLightboxDiagram(active)}
-                    className="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-slate-300 transition hover:border-brand-500/40 hover:text-white"
+                    disabled={active.kind !== 'svg'}
+                    className="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-slate-300 transition hover:border-brand-500/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Maximize2 size={14} />
-                    فتح بملء الشاشة
+                    {active.kind === 'svg' ? 'فتح بملء الشاشة' : 'جدول سيناريو'}
                   </button>
                 </div>
               </div>
 
               <div className="grid gap-8 p-6 md:grid-cols-2 md:p-8">
-                <DiagramPreview diagram={active} onExpand={() => setLightboxDiagram(active)} />
+                {active.kind === 'svg' && active.filename ? (
+                  <DiagramPreview diagram={active} onExpand={() => setLightboxDiagram(active)} />
+                ) : active.scenarioId ? (
+                  <UseCaseScenarioPanel scenarioId={active.scenarioId} />
+                ) : null}
 
                 <div>
                   <h4 className="text-sm font-semibold uppercase tracking-wider text-brand-300">
@@ -234,7 +242,7 @@ export function DiagramGallery() {
       </div>
 
       <AnimatePresence>
-        {lightboxDiagram && (
+        {lightboxDiagram && lightboxDiagram.kind === 'svg' && lightboxDiagram.filename && (
           <Lightbox diagram={lightboxDiagram} onClose={() => setLightboxDiagram(null)} />
         )}
       </AnimatePresence>
