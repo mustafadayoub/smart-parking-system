@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Cairo', ui-sans-serif, system-ui, sans-serif;
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-slate-950 text-slate-100 antialiased;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  @apply bg-brand-500/30 text-white;
+}
+
+.gradient-text {
+  @apply bg-gradient-to-l from-brand-300 via-cyan-300 to-brand-400 bg-clip-text text-transparent;
+}
+
+.glass-panel {
+  @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl;
+}
+
+.section-padding {
+  @apply px-6 py-24 md:px-10 lg:px-16 xl:px-24;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+code {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+pre {
+  direction: ltr;
+  text-align: left;
+}

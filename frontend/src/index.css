@@ -1,0 +1,259 @@
+@import 'tailwindcss';
+
+body {
+  @apply min-h-screen bg-slate-950 text-slate-100 antialiased;
+}
+
+/* ── Login ambient background ── */
+.login-scene {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(34, 211, 238, 0.12), transparent),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(139, 92, 246, 0.1), transparent),
+    rgb(2 6 23);
+}
+
+.login-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: orb-float 12s ease-in-out infinite;
+}
+
+.login-orb-cyan {
+  top: 10%;
+  left: 5%;
+  width: 320px;
+  height: 320px;
+  background: rgba(34, 211, 238, 0.15);
+}
+
+.login-orb-violet {
+  bottom: 5%;
+  right: 10%;
+  width: 280px;
+  height: 280px;
+  background: rgba(167, 139, 250, 0.12);
+  animation-delay: -4s;
+}
+
+@keyframes orb-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(20px, -15px) scale(1.05);
+  }
+}
+
+/* ── Developer credits ── */
+.team-header {
+  animation: fade-down 0.7s ease-out both;
+}
+
+.team-card {
+  animation: card-rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fade-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Rotating gradient border */
+.dev-card-border {
+  position: relative;
+  border-radius: 1.25rem;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 211, 238, 0.35),
+    rgba(139, 92, 246, 0.2),
+    rgba(34, 211, 238, 0.1)
+  );
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+}
+
+.dev-card-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    transparent 0%,
+    rgba(34, 211, 238, 0.6) 25%,
+    rgba(167, 139, 250, 0.6) 50%,
+    rgba(34, 211, 238, 0.6) 75%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  animation: border-spin 4s linear infinite;
+}
+
+.group:hover .dev-card-border::before {
+  opacity: 1;
+}
+
+.group:hover .dev-card-border {
+  transform: translateY(-3px);
+  box-shadow:
+    0 20px 40px -12px rgba(34, 211, 238, 0.15),
+    0 8px 16px -8px rgba(139, 92, 246, 0.12);
+}
+
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-spin {
+  to {
+    --border-angle: 360deg;
+  }
+}
+
+.dev-card-inner {
+  border-radius: calc(1.25rem - 1px);
+  background: rgba(2, 6, 23, 0.92);
+  backdrop-filter: blur(20px);
+}
+
+.dev-card-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.dev-card-shine {
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.06) 45%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.06) 55%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: shine-sweep 3s ease-in-out infinite;
+}
+
+@keyframes shine-sweep {
+  0%,
+  100% {
+    background-position: 200% 0;
+  }
+  50% {
+    background-position: -200% 0;
+  }
+}
+
+/* Avatar pulse ring */
+.avatar-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  animation: avatar-breathe 3s ease-in-out infinite;
+}
+
+@keyframes avatar-breathe {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.04);
+  }
+}
+
+/* Name shimmer on hero title */
+.name-shimmer {
+  background: linear-gradient(
+    90deg,
+    #fff 0%,
+    #a5f3fc 25%,
+    #c4b5fd 50%,
+    #a5f3fc 75%,
+    #fff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: text-shimmer 6s linear infinite;
+}
+
+@keyframes text-shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.dev-name-ar {
+  letter-spacing: 0.01em;
+}
+
+.dev-name-en {
+  transition: opacity 0.3s ease;
+}
+
+.group:hover .dev-name-en {
+  opacity: 1;
+}
+
+.dev-spark {
+  animation: spark-twinkle 2.5s ease-in-out infinite;
+}
+
+@keyframes spark-twinkle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.15) rotate(12deg);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
