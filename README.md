@@ -2,6 +2,232 @@
 
 Full-stack intelligent parking management with FastAPI, React, PostgreSQL, Redis, Celery, and real-time WebSocket updates.
 
+---
+
+## دليل التشغيل الكامل · Complete Run Guide
+
+> **ترتيب التشغيل الموصى به:** Docker (Backend) → Frontend → Presentation Site  
+> **Recommended order:** Docker (Backend) → Frontend → Presentation Site
+
+### المتطلبات · Prerequisites
+
+| الأداة | الإصدار | مطلوب لـ |
+|--------|---------|----------|
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | أحدث إصدار | Backend + DB + Redis + Celery |
+| [Node.js](https://nodejs.org/) | 20+ | Frontend + موقع العرض |
+| Git | اختياري | استنساخ / رفع GitHub |
+
+---
+
+### 1️⃣ أول مرة — إعداد المشروع · First-time setup
+
+```powershell
+# 1. انتقل لمجلد المشروع
+cd "d:\Smart Parking System"
+
+# 2. انسخ ملف البيئة (مرة واحدة فقط)
+copy .env.example .env
+
+# 3. (اختياري) راجع .env — القيم الافتراضية مناسبة للتطوير المحلي
+```
+
+**ماذا يفعل `.env`؟** يحدّد اتصال PostgreSQL، Redis، مفتاح JWT، ومفتاح webhook للمستشعرات.
+
+---
+
+### 2️⃣ تشغيل Backend (Docker) · Start Backend
+
+**أول build (قد يستغرق 5–15 دقيقة):**
+
+```powershell
+cd "d:\Smart Parking System"
+docker compose up --build -d
+```
+
+**التشغيل اليومي (بدون build — أسرع):**
+
+```powershell
+docker compose up -d
+```
+
+**متابعة السجلات:**
+
+```powershell
+docker compose logs -f api
+```
+
+**التحقق من الصحة:**
+
+```powershell
+curl http://localhost:8000/health
+```
+
+عند النجاح، الـ API يُطبّق migrations تلقائياً (`bootstrap_db.py`) ويُ seed حسابات Demo إذا `SEED_ON_STARTUP=true`.
+
+| الخدمة | الرابط / المنفذ |
+|--------|-----------------|
+| API | http://localhost:8000 |
+| Swagger (توثيق API) | http://localhost:8000/docs |
+| PostgreSQL | `localhost:5432` |
+| Redis | `localhost:6379` |
+
+**إذا فشل الحجز أو ظهر خطأ migrations:**
+
+```powershell
+docker compose exec api alembic upgrade head
+```
+
+---
+
+### 3️⃣ تشغيل واجهة التطبيق · Start Frontend (React)
+
+> **مهم:** Backend (Docker) يجب أن يكون شغّالاً قبل هذه الخطوة.
+
+```powershell
+cd "d:\Smart Parking System\frontend"
+
+# أول مرة فقط:
+copy .env.example .env
+npm install
+
+# التشغيل:
+npm run dev
+```
+
+| | |
+|--|--|
+| **الرابط** | http://localhost:5173 |
+| **API** | http://localhost:8000/api/v1 |
+| **WebSocket** | ws://localhost:8000/ws/v1/spots/updates |
+
+**بناء للإنتاج:**
+
+```powershell
+npm run build
+npm run preview
+```
+
+---
+
+### 4️⃣ تشغيل موقع العرض التقديمي · Presentation Site
+
+> موقع منفصل للمناقشة الجامعية (المخططات، المعمارية، قاعدة البيانات) — **لا يحتاج Docker**.
+
+```powershell
+cd "d:\Smart Parking System\presentation-site"
+
+# أول مرة فقط:
+npm install
+
+# التشغيل:
+npm run dev
+```
+
+| | |
+|--|--|
+| **الرابط** | http://localhost:5173 *(أو المنفذ التالي إذا Frontend شغّال)* |
+| **المحتوى** | 11 مخططاً بالترتيب: BFD → DFD → Use Cases → Scenarios → Activity → Class |
+
+**بناء للإنتاج:**
+
+```powershell
+npm run build
+npm run preview
+```
+
+---
+
+### 5️⃣ تسجيل الدخول · Demo Accounts
+
+| الدور | البريد | كلمة المرور |
+|-------|--------|-------------|
+| **إدارة** | `admin@example.com` | `Admin123!` |
+| **سائق** | `driver@example.com` | `Driver123!` |
+
+**Mock Payment (بطاقة ناجحة):** `4242 4242 4242 4242`
+
+**سيناريو تجربة سريع:**
+1. سجّل دخول كسائق → اختر موقفاً → احجز (اسم + لوحة + وقت) → ادفع
+2. ألغِ الحجز من القائمة (قبل/بعد ساعة لاختبار الاسترداد)
+3. سجّل دخول كإدارة → تقارير + مستخدمين + تنبيهات أعطال
+4. من لوحة السائق/الإدارة → **IoT Simulator** → أرسل `FAULT` لرؤية التنبيه
+
+---
+
+### 6️⃣ تشغيل الاختبارات · Run Tests
+
+```powershell
+# 1. تأكد أن Docker شغّال
+docker compose up -d
+
+# 2. أنشئ قاعدة اختبار (مرة واحدة)
+docker compose exec db psql -U parking -d smart_parking -c "CREATE DATABASE smart_parking_test;"
+
+# 3. ثبّت dependencies الاختبار
+pip install -r requirements-test.txt
+
+# 4. شغّل الاختبارات
+cd "d:\Smart Parking System"
+pytest -v
+```
+
+---
+
+### 7️⃣ إيقاف / إعادة تشغيل / إصلاح · Stop & Troubleshooting
+
+| الحالة | الأمر |
+|-------------|-------|
+| **إيقاف كل شيء** | `docker compose down` |
+| **إيقاف + حذف البيانات** | `docker compose down -v` |
+| **إعادة بناء كاملة** | `.\scripts\reset-dev.ps1` |
+| **Migrations يدوي** | `docker compose exec api alembic upgrade head` |
+| **إعادة seed** | `docker compose exec api python scripts/seed_data.py` |
+| **حالة الحاويات** | `docker compose ps` |
+
+---
+
+### 8️⃣ رفع التحديثات إلى GitHub · Push Updates
+
+```powershell
+cd "d:\Smart Parking System"
+git add .
+git commit -m "وصف التغيير"
+git push
+```
+
+**المستودع:** https://github.com/mustafadayoub/smart-parking-system
+
+**أول رفع (إن لم يكن remote مضبوطاً):**
+
+```powershell
+git remote add origin https://github.com/mustafadayoub/smart-parking-system.git
+git push -u origin main
+```
+
+---
+
+### ملخص الأوامر (نسخ سريع) · Cheat Sheet
+
+```powershell
+# ── Backend ──
+cd "d:\Smart Parking System"
+docker compose up -d
+
+# ── Frontend ──
+cd frontend && npm run dev
+
+# ── Presentation ──
+cd presentation-site && npm run dev
+
+# ── Tests ──
+pytest -v
+
+# ── Git ──
+git add . && git commit -m "update" && git push
+```
+
+---
+
 ## Development Team
 
 <div align="center">
@@ -65,7 +291,8 @@ Smart Parking System/
 │   ├── websockets/             # Connection manager + WS route
 │   └── celery_app/             # Celery app, tasks, beat schedule
 ├── alembic/                    # Database migrations
-├── frontend/                   # React + Vite + TypeScript SPA
+├── frontend/                   # React + Vite + TypeScript SPA (التطبيق)
+├── presentation-site/          # موقع العرض التقديمي للمناقشة
 ├── scripts/seed_data.py        # Dev seed (spots + demo users)
 ├── docker-compose.yml
 ├── Dockerfile
@@ -73,11 +300,14 @@ Smart Parking System/
 └── .env.example
 ```
 
-## Quick Start (Docker)
+## Quick Start (Docker) — ملخص
 
-```bash
-cp .env.example .env
-docker compose up --build
+> للتفاصيل الكاملة راجع **دليل التشغيل الكامل** أعلاه.
+
+```powershell
+copy .env.example .env
+docker compose up --build -d
+cd frontend && npm install && npm run dev
 ```
 
 Services:
@@ -87,6 +317,7 @@ Services:
 | API            | http://localhost:8000 |
 | Swagger UI     | http://localhost:8000/docs |
 | Frontend (dev) | http://localhost:5173 |
+| Presentation   | http://localhost:5173 *(presentation-site)* |
 | PostgreSQL     | localhost:5432    |
 | Redis          | localhost:6379    |
 
@@ -100,18 +331,17 @@ The API container bootstraps the database automatically (`bootstrap_db.py`: migr
 
 This stops containers, wipes the DB volume, rebuilds, seeds demo data, and waits for `/health`.
 
-### Manual start
+### Manual migrations
 
-```bash
-cp .env.example .env
-docker compose up --build
+```powershell
+docker compose exec api alembic upgrade head
 ```
 
 ### Frontend (local dev)
 
-```bash
+```powershell
 cd frontend
-cp .env.example .env
+copy .env.example .env
 npm install
 npm run dev
 ```
@@ -215,10 +445,12 @@ See [`.env.example`](.env.example) for all settings. Key values:
 
 ## Database Schema
 
-- **users** — `id`, `role` (DRIVER/MANAGEMENT), `email`, `password_hash`, `created_at`
+- **users** — `id`, `role`, `email`, `password_hash`, `full_name`, `created_at`
 - **parking_spots** — `id`, `spot_number`, `level_zone`, `status`, `last_updated`
-- **reservations** — `id`, `user_id`, `spot_id`, `start_time`, `end_time`, `status`, `created_at`
+- **reservations** — `id`, `reservation_number`, `user_id`, `spot_id`, `vehicle_plate`, `start_time`, `end_time`, `status`, `payment_status`, `total_price`, `created_at`
 - **sensor_logs** — `id`, `spot_id`, `sensor_state`, `timestamp`
+- **malfunction_alerts** — تنبيهات أعطال IoT (`FAULT`)
+- **payment_transactions** — سجل الدفع والاسترداد
 
 Tables are managed with Alembic migrations (no runtime `create_all`).
 
@@ -226,14 +458,17 @@ Tables are managed with Alembic migrations (no runtime `create_all`).
 # Generate a new revision after model changes
 alembic revision --autogenerate -m "describe change"
 
-# Apply migrations
+# Apply migrations (Docker)
+docker compose exec api alembic upgrade head
+
+# Apply migrations (local)
 alembic upgrade head
 
 # Roll back one revision
 alembic downgrade -1
 ```
 
-Initial schema lives in `alembic/versions/001_initial_schema.py`.
+Migrations: `001_initial_schema` → `002_add_payment_fields` → `003_diagram_alignment`
 
 ## Automated Testing (Phase 3)
 
