@@ -11,6 +11,7 @@ venv/
 htmlcov/
 .coverage
 *.log
+celerybeat-schedule
 postgres_data/
 frontend/node_modules/
 frontend/dist/
